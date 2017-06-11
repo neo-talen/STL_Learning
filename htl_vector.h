@@ -8,7 +8,7 @@
 #include"htl_unintialized.h"
 HTL_NS_BEGIN
 
-#define ITERATOR_CALSS 1
+#define ITERATOR_CALSS 0
 
 template<class T, class Alloc = alloc>
 class MyVector
@@ -51,7 +51,7 @@ public:
 	//reverse_reference TODO
 
 
-	size_type size() const { return size_type(end() - begin()); }
+	size_type size() const { return size_type(cend() - cbegin()); }
 	size_type max_size() const { return size_type(-1) / sizeof(T); }
 	size_type capacity() const { return size_type(end_of_storage - begin()); }
 	bool empty() const { return begin() == end(); }
@@ -99,7 +99,7 @@ public:
 	MyVector<T, Alloc>& operator=(const MyVector<T, Alloc>& x);
 
 	//expand capacity
-	void reserve(size_tyep n) {
+	void reserve(size_type n) {
 		if (capacity() < n) {
 			const size_type old_size = size();
 			iterator tmp = allocate_and_copy(n, start, finish);
@@ -281,7 +281,7 @@ MyVector<T, Alloc>& MyVector<T, Alloc>::operator=(const MyVector<T, Alloc>& x) {
 		}
 		else{
 			copy(x.begin(), x.end() + size(), start);
-			uninitialize_copy(x.begin() + size(), x.end(), finish);
+			uninitialized_copy(x.begin() + size(), x.end(), finish);
 		}
 		finish = start + x.size();
 	}
@@ -301,7 +301,7 @@ void MyVector<T, Alloc>::insert_aux(iterator position, const T& x) {
 		const size_type old_size = size();
 		const size_type len = old_size != 0 ? 2 * old_size : 1;
 
-		iterator new_start = data_allocator::allocate(n);
+		iterator new_start = data_allocator::allocate(len);
 		iterator new_finish = new_start;
 		try {
 			new_finish = uninitialized_copy(start, position, new_start);
@@ -433,8 +433,7 @@ void MyVector<T, Alloc>::range_insert(iterator position, ForwardIterator first,
 template <class T, class Alloc>
 void MyVector<T, Alloc>::insert(iterator position, const_iterator first, const_iterator last) {
 	if (first != last) {
-		size_type n = 0;
-		distance(first, last, n);
+		size_type n = distance(first, last);
 		if (size_type(end_of_storage - finish) >= n) {
 			const size_type elems_after = finish - position;
 			iterator old_finish = finish;
@@ -459,8 +458,8 @@ void MyVector<T, Alloc>::insert(iterator position, const_iterator first, const_i
 			iterator new_finish = new_start;
 			try{
 				new_finish = uninitialized_copy(start, position, new_start);
-			new_finish = uninitialized_copy(first, last, new_finish);
-			new_finish = uninitialized_copy(position, finish, new_finish);
+				new_finish = uninitialized_copy(first, last, new_finish);
+				new_finish = uninitialized_copy(position, finish, new_finish);
 			}
 			catch (...) {
 				destroy(new_start, new_finish);

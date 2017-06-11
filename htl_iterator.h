@@ -11,7 +11,7 @@ struct input_iterator_tag{};
 struct output_iterator_tag{};
 struct forward_iterator_tag:public input_iterator_tag{};
 struct bidirection_iterator_tag:public forward_iterator_tag{};
-struct randomaccess_iterator_tag:public bidirection_iterator_tag{};
+struct random_access_iterator_tag:public bidirection_iterator_tag{};
 
 template <class Category, class T, class Distance = ptrdiff_t, 
 	class Pointer = T*, class Reference = T&>
@@ -34,20 +34,20 @@ struct iterator_traits {
 
 template <class T>
 struct iterator_traits<T*> {
-	typedef random_access_iterator_tag iterator_category;
-	typedef T                          value_type;
-	typedef ptrdiff_t                  difference_type;
-	typedef T*                         pointer;
-	typedef T&                         reference;
+	typedef random_access_iterator_tag	iterator_category;
+	typedef T							value_type;
+	typedef ptrdiff_t					difference_type;
+	typedef T*							pointer;
+	typedef T&							reference;
 };
 
 template <class T>
 struct iterator_traits<const T*> {
-	typedef random_access_iterator_tag iterator_category;
-	typedef T                          value_type;
-	typedef ptrdiff_t                  difference_type;
-	typedef const T*                   pointer;
-	typedef const T&                   reference;
+	typedef random_access_iterator_tag	iterator_category;
+	typedef T							value_type;
+	typedef ptrdiff_t					difference_type;
+	typedef const T*					pointer;
+	typedef const T&					reference;
 };
 
 template <class Iterator>
@@ -71,23 +71,22 @@ value_type(const Iterator&) {
 
 //distance
 template<class InputIterator>
-inline iterator_traits<InputIterator>::difference_type
+inline typename iterator_traits<InputIterator>::difference_type
 __distance(InputIterator first, InputIterator last, input_iterator_tag) {
-	iterator_traits<InputIterator>::difference_type n = 0;
+	typename iterator_traits<InputIterator>::difference_type n = 0;
 	while (first++ != last) 
 		++n;
 	return n;
 }
 
 template <class RandomAccessIterator>
-inline iterator_traits<RandomAccessIterator>::difference_type
-__distance(RandomAccessIterator first, RandomAccessIterator last,
-	random_access_iterator_tag) {
+inline typename iterator_traits<RandomAccessIterator>::difference_type 
+__distance(RandomAccessIterator first, RandomAccessIterator last, random_access_iterator_tag) {
 	return last - first;
 }
 
 template <class InputIterator>
-inline iterator_traits<InputIterator>::difference_type
+inline typename iterator_traits<InputIterator>::difference_type 
 distance(InputIterator first, InputIterator last) {
 	typedef typename iterator_traits<InputIterator>::iterator_category category;
 	return __distance(first, last, category());
@@ -97,7 +96,8 @@ distance(InputIterator first, InputIterator last) {
 
 template<class InputIterator, class Distance>
 inline void __advance(InputIterator& i, Distance n, input_iterator_tag) {
-	while (n--)++i;
+	while (n--)
+		++i;
 }
 template<class BidirectionIterator, class Distance>
 inline void __advance(BidirectionIterator& i, Distance n, bidirection_iterator_tag) {
@@ -107,7 +107,7 @@ inline void __advance(BidirectionIterator& i, Distance n, bidirection_iterator_t
 		while (n++)--i;
 }
 template<class RandomAccessIterator, class Distance>
-inline void __advance(RandomAccessIterator& i, Distance n, randaccess_iterator_tag) {
+inline void __advance(RandomAccessIterator& i, Distance n, random_access_iterator_tag) {
 	i += n;
 }
 

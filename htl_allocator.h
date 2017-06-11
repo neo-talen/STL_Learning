@@ -55,7 +55,7 @@ void* __malloc_alloc_template<inst>::oom_malloc(size_t n) {
 	void* result;
 	for (;;) {
 		my_malloc_handler = __malloc_alloc_oom_handler;
-		if (0 == my_malloc_handler) { cerr << "bad malloc\n"; exit(1); }
+		if (0 == my_malloc_handler) { std::cerr << "bad malloc\n"; exit(1); }
 		(*my_malloc_handler)();
 		result = malloc(n);
 		if (result)return result;
@@ -83,15 +83,27 @@ template<class T, class Alloc>
 class simple_alloc {
 public:
 	static T* allocate(size_t n) {
+#if DEBUG_FLAG 
+		std::cout << "allocator(n) allocating...\n";
+#endif
 		return 0 == n ? 0 : (T*)Alloc::allocate(n * sizeof(T));
 	}
 	static T* allocate(void) {
+#if DEBUG_FLAG 
+		std::cout << "allocator(1) allocating...\n";
+#endif
 		return (T*)Alloc::allocate(sizeof(T));
 	}
 	static void deallocate(T* p, size_t n) {
+#if DEBUG_FLAG 
+		std::cout << "allocator(n) deallocating...\n";
+#endif
 		if (0 != n)Alloc::deallocate(p, n * sizeof(T));
 	}
 	static void deallocate(T* p) {
+#if DEBUG_FLAG 
+		std::cout << "allocator(1) deallocating...\n";
+#endif
 		Alloc::deallocate(p, sizeof(T));
 	}
 };
@@ -101,11 +113,17 @@ typedef malloc_alloc alloc;
 ///////////////////constructor and destructor/////////////////////////
 template<class T1, class T2>
 inline void construct(T1* p, const T2& value){
+#if DEBUG_FLAG 
+	std::cout << "constructing(1)......\n";
+#endif
 	new(p) T1(value);
 }
 
 template<class T>
 inline void destroy(T* ptr) {
+#if DEBUG_FLAG 
+	std::cout << "deconstructing(1)......\n";
+#endif
 	ptr->~T();
 }
 
@@ -127,11 +145,22 @@ inline void __destroy(ForwardIterator first, ForwardIterator last, T*) {
 
 template<class ForwardIterator>
 inline void destroy(ForwardIterator first, ForwardIterator last) {
+#if DEBUG_FLAG 
+	std::cout << "deconstructing(n)......\n";
+#endif
 	__destroy(first, last, value_type(first));
 }
 
-inline void destroy(char*, char*){}
-inline void destroy(wchar_t*, wchar_t*){}
+inline void destroy(char*, char*){
+#if DEBUG_FLAG 
+	std::cout << "deconstructing(n)......\n";
+#endif
+}
+inline void destroy(wchar_t*, wchar_t*){
+#if DEBUG_FLAG 
+	std::cout << "deconstructing(n)......\n";
+#endif
+}
 
 
 HTL_NS_END
