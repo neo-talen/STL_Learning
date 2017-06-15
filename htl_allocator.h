@@ -30,8 +30,8 @@ public:
 		if (0 == result) result = oom_malloc(n);
 		return result;
 	}
-	static void deallocate(void* p, size_t) {
-		free(p);
+	static void deallocate(void* p, size_t n) {
+			free(p);
 	}
 
 	static void* reallocate(void* p, size_t, size_t new_size) {
@@ -84,25 +84,28 @@ class simple_alloc {
 public:
 	static T* allocate(size_t n) {
 #if DEBUG_FLAG 
-		std::cout << "allocator(n) allocating...\n";
+		std::cout << "alloc "<< n <<" objects space...\n";
 #endif
 		return 0 == n ? 0 : (T*)Alloc::allocate(n * sizeof(T));
 	}
 	static T* allocate(void) {
 #if DEBUG_FLAG 
-		std::cout << "allocator(1) allocating...\n";
+		std::cout << "alloc " <<1<<" object space...\n";
 #endif
 		return (T*)Alloc::allocate(sizeof(T));
 	}
 	static void deallocate(T* p, size_t n) {
 #if DEBUG_FLAG 
-		std::cout << "allocator(n) deallocating...\n";
+		std::cout << "dealloc " <<n<<" objects space...\n";
 #endif
 		if (0 != n)Alloc::deallocate(p, n * sizeof(T));
+#if DEBUG_FLAG 
+		std::cout << "dealloc " << n << " objects space..successed.\n";
+#endif
 	}
 	static void deallocate(T* p) {
 #if DEBUG_FLAG 
-		std::cout << "allocator(1) deallocating...\n";
+		std::cout << "dealloc " <<1<<" object space...\n";
 #endif
 		Alloc::deallocate(p, sizeof(T));
 	}
@@ -129,12 +132,18 @@ inline void destroy(T* ptr) {
 
 template<class ForwardIterator>
 inline void __destroy_aux(ForwardIterator first, ForwardIterator last, __false_type) {
+#if DEBUG_FLAG 
+	std::cout << "nontrivial deconstructing(n).....__false_type.\n";
+#endif
 	for (; first != last; ++first)
 		destroy(&*first);
 }
 
 template<class ForwardIterator>
 inline void __destroy_aux(ForwardIterator first, ForwardIterator last, __true_type) {
+#if DEBUG_FLAG 
+	std::cout << "trivial deconstructing(n).....__true_type.\n";
+#endif
 }
 
 template<class ForwardIterator, class T>
@@ -145,20 +154,17 @@ inline void __destroy(ForwardIterator first, ForwardIterator last, T*) {
 
 template<class ForwardIterator>
 inline void destroy(ForwardIterator first, ForwardIterator last) {
-#if DEBUG_FLAG 
-	std::cout << "deconstructing(n)......\n";
-#endif
 	__destroy(first, last, value_type(first));
 }
 
 inline void destroy(char*, char*){
 #if DEBUG_FLAG 
-	std::cout << "deconstructing(n)......\n";
+	std::cout << "trivial deconstructing(n).....speciallized char.\n";
 #endif
 }
 inline void destroy(wchar_t*, wchar_t*){
 #if DEBUG_FLAG 
-	std::cout << "deconstructing(n)......\n";
+	std::cout << "trivial deconstructing(n).....speciallized wchar_t.\n";
 #endif
 }
 

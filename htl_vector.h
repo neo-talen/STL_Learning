@@ -8,8 +8,6 @@
 #include"htl_unintialized.h"
 HTL_NS_BEGIN
 
-#define ITERATOR_CALSS 0
-
 template<class T, class Alloc = alloc>
 class MyVector
 {
@@ -43,15 +41,15 @@ protected:
 
 public:
 	iterator begin() { return start; }
-	const_iterator cbegin() const { return start; }
+	const_iterator begin() const { return start; }
 
 	iterator end() { return finish; }
-	const_iterator cend() const { return finish; }
+	const_iterator end() const { return finish; }
 
 	//reverse_reference TODO
 
 
-	size_type size() const { return size_type(cend() - cbegin()); }
+	size_type size() const { return size_type(end() - begin()); }
 	size_type max_size() const { return size_type(-1) / sizeof(T); }
 	size_type capacity() const { return size_type(end_of_storage - begin()); }
 	bool empty() const { return begin() == end(); }
@@ -73,7 +71,7 @@ public:
 		end_of_storage = finish;
 	}
 
-#if ITERATOR_CALSS
+#if MEMBER_TEMPLATE
 	template<class InputIterator>
 	MyVector(InputIterator first, InputIterator last)
 		:start(0), finish(0), end_of_storage(0)
@@ -113,10 +111,10 @@ public:
 
 public:
 	reference front() { return *begin(); }
-	const_reference cfront() const { return *begin(); }
+	const_reference front() const { return *begin(); }
 
 	reference back() { return *(end() - 1); }
-	const_reference cback() const { return *(end() - 1); }
+	const_reference back() const { return *(end() - 1); }
 
 public:
 	void push_back(const T& x) {
@@ -148,7 +146,7 @@ public:
 		return insert(position, T());
 	}
 
-#if ITERATOR_CALSS
+#if MEMBER_TEMPLATE
 	template<class InputIterator>
 	void insert(iterator position, InputIterator first, InputIterator last) {
 		range_insert(position, first, last, iterator_category(first));
@@ -205,7 +203,7 @@ protected:
 		}
 	}
 
-#if ITERATOR_CALSS
+#if MEMBER_TEMPLATE
 	template<class ForwardIterator>
 	iterator allocate_and_copy(size_type n, ForwardIterator first, ForwardIterator last) {
 		iterator result = data_allocator::allocate(n);
@@ -223,6 +221,7 @@ protected:
 		iterator result = data_allocator::allocate(n);
 		try {
 			uninitialized_copy(first, last, result);
+			return result;
 		}
 		catch (...) {
 			data_allocator::deallocate(result, n);
@@ -230,7 +229,7 @@ protected:
 		}
 	}
 
-#if ITERATOR_CALSS
+#if MEMBER_TEMPLATE
 	template<class ForwardIterator>
 	void range_initialize(ForwardIterator first, ForwardIterator last, forward_iterator_tag) {
 		size_type n = distance(first, last);
@@ -269,10 +268,12 @@ template<class T, class Alloc>
 MyVector<T, Alloc>& MyVector<T, Alloc>::operator=(const MyVector<T, Alloc>& x) {
 	if (&x != this) {
 		if (x.size() > capacity()) {
+			std::cout << "copy assignment invoked here\n";
 			iterator tmp = allocate_and_copy(x.end() - x.begin(), x.begin(), x.end());
 			destroy(start, finish);
 			deallocate();
 			start = tmp;
+			cout << "start of value: " << *start << endl;
 			end_of_storage = start + (x.end() - x.begin());
 		}
 		else if (size() >= x.size()) {
@@ -368,7 +369,7 @@ void MyVector<T, Alloc>::insert(iterator position, size_type n, const T& x) {
 	}
 }
 
-#if ITERATOR_CALSS
+#if MEMBER_TEMPLATE
 //?这两个range_insert为什么分开来，有什么不同
 template<class T, class Alloc> template<class InputIterator> 
 void MyVector<T, Alloc>::range_insert(iterator pos, InputIterator first,

@@ -8,6 +8,8 @@
 
 #define DEBUG_FLAG 1
 
+#define MEMBER_TEMPLATE 0
+
 #include<string.h>
 
 #endif // !_HTL_MICROS_H
