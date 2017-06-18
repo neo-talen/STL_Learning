@@ -210,6 +210,22 @@ bool lexicographical_compare(InputIterator1 first1, InputIterator1 last1,
 }
 
 
+
+
+// other utility
+
+template<class T>
+T max(T a, T b) {
+	return a < b ? b : a;
+}
+
+
+
+
+
+
+
+
 HTL_NS_END
 
 #endif // ! _HTL_ALGORITHM_H

@@ -11,5 +11,6 @@
 #define MEMBER_TEMPLATE 0
 
 #include<string.h>
+#include<cstddef>
 
 #endif // !_HTL_MICROS_H
