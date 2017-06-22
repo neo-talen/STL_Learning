@@ -194,7 +194,7 @@ public:
 	iterator end() { return finish; }
 
 	const_iterator begin() const { return start; }
-	const_iterator end() const { return end(); }
+	const_iterator end() const { return finish; }
 
 	//TODO reverse
 

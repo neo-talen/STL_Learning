@@ -83,8 +83,8 @@ __uninitialized_copy_n(RandomAccessIterator first, Size count,
 }
 
 template <class InputIterator, class Size, class ForwardIterator>
-inline std::pair<InputIterator, ForwardIterator> uninitialized_copy_n(InputIterator first,
-	Size count, ForwardIterator result) {
+inline std::pair<InputIterator, ForwardIterator> 
+uninitialized_copy_n(InputIterator first, Size count, ForwardIterator result) {
 	return __uninitialized_copy_n(first, count, result, iterator_category(first));
 }
 
