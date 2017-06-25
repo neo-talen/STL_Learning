@@ -906,7 +906,7 @@ void deque<T, Alloc, BufSize>::insert_aux(iterator pos, size_type n, const value
 
 }
 
-#if MEMBER_TEMPLATES  
+#if MEMBER_TEMPLATE
 
 template <class T, class Alloc, size_t BufSize>
 template <class ForwardIterator>
