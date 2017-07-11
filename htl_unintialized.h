@@ -26,7 +26,7 @@ __uninitialized_copy_aux(InputIterator first, InputIterator last,
 	ForwardIterator cur = result;
 	try {
 		for (; first != last; ++first, ++cur) {
-			construc(&*cur, *first);
+			construct(&*cur, *first);
 		}
 		return cur;
 	}

@@ -9,6 +9,46 @@
 
 HTL_NS_BEGIN
 
+// swap
+template<class ForwardIterator1, class ForwardIterator2 class T >
+inline void __iter_swap(ForwardIterator1 left, ForwardIterator2 right, T*) {
+	T tmp = *left;
+	*left = *right;
+	*right = tmp;
+}
+template<class ForwardIterator1, class ForwardIterator2>
+inline void iter_swap(ForwardIterator1 left, ForwardIterator2 right) {
+	__iter_swap(left, right, value_type(left));
+}
+
+template<class T>
+inline void swap(T& left, T& right) {
+	T tmp = left;
+	left = right; 
+	right = tmp;
+}
+
+// min, max
+template<class T>
+inline const T& min(const T& a, const T& b) {
+	return a < b ? a : b;
+}
+
+template<class T>
+inline const T& max(const T& a, const T& b) {
+	return a < b ? b : a;
+}
+
+template<class T, class Compare>
+inline const T& min(const T& a, const T& b, Compare comp) {
+	return comp(a, b) ? a : b;
+}
+
+template<class T, class Compare>
+inline const T& max(const T& a, const T& b, Compare comp) {
+	return comp(a, b) ? b : a;
+}
+
 //-----------------------copy
 template<class InputIterator, class OutputIterator>
 inline OutputIterator __copy(InputIterator first, InputIterator last,
@@ -143,8 +183,29 @@ copy_backward(BidirectionalIterator1 first, BidirectionalIterator1 last,
 		BidirectionalIterator2>()(first, last, result);
 }
 
-//---TODO-----------------copy_n
+//---------------------copy_n
 
+template<class InputIterator, class Size, class OutputIterator>
+pair<InputIterator, OutputIterator> __copy_n(InputIterator first, Size count,
+	OutputIterator result, input_iterator_tag) {
+	for (; count > 0; --count)
+		*result++ = *first++;
+
+	return make_pair(first, result);
+}
+
+template<class InputIterator, class Size, class OutputIterator>
+inline pair<InputIterator, OutputIterator> __copy_n(InputIterator first, Size count,
+	OutputIterator result, random_access_iterator_tag) {
+	InputIterator last = first + count;
+	
+	return make_pair(last, copy(first, last, result);
+}
+
+template<class InputIterator, class Size, class OutputIterator>
+inline pair<InputIterator, OutputIterator> copy_n(InputIterator first, Size count, OutputIterator result) {
+	return __copy_n(first, count, result, iterator_category(first));
+}
 
 
 //-----------------------fill
@@ -162,10 +223,31 @@ OutputIterator fill_n(OutputIterator first, Size n, const T& value) {
 	return first;
 }
 
+// mismatch
+template <class InputIterator1, class InputIterator2>
+pair<InputIterator1, InputIterator2> mismatch(InputIterator1 first1,
+	InputIterator1 last1,
+	InputIterator2 first2) {
+	while (first1 != last1 && *first1 == *first2) {
+		++first1;
+		++first2;
+	}
+	return pair<InputIterator1, InputIterator2>(first1, first2);
+}
 
-//-----------other small funcitons
+template <class InputIterator1, class InputIterator2, class BinaryPredicate>
+pair<InputIterator1, InputIterator2> mismatch(InputIterator1 first1,
+	InputIterator1 last1,
+	InputIterator2 first2,
+	BinaryPredicate binary_pred) {
+	while (first1 != last1 && binary_pred(*first1, *first2)) {
+		++first1;
+		++first2;
+	}
+	return pair<InputIterator1, InputIterator2>(first1, first2);
+}
 
-
+// equal
 template <class InputIterator1, class InputIterator2>
 inline bool equal(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2) {
 	for (; first1 != last1; ++first1, ++first2)
@@ -183,7 +265,7 @@ inline bool equal(InputIterator1 first1, InputIterator1 last1,
 	return true;
 }
 
-
+// lexicographical_compare//´Çµä±È½Ï
 template <class InputIterator1, class InputIterator2>
 bool lexicographical_compare(InputIterator1 first1, InputIterator1 last1,
 	InputIterator2 first2, InputIterator2 last2) {
@@ -209,15 +291,304 @@ bool lexicographical_compare(InputIterator1 first1, InputIterator1 last1,
 	return first1 == last1 && first2 != last2;
 }
 
-
-
-
-// other utility
-
-template<class T>
-T max(T a, T b) {
-	return a < b ? b : a;
+inline bool
+lexicographical_compare(const unsigned char* first1,
+	const unsigned char* last1,
+	const unsigned char* first2,
+	const unsigned char* last2)
+{
+	const size_t len1 = last1 - first1;
+	const size_t len2 = last2 - first2;
+	const int result = memcmp(first1, first2, min(len1, len2));
+	return result != 0 ? result < 0 : len1 < len2;
 }
+
+inline bool lexicographical_compare(const char* first1, const char* last1,
+	const char* first2, const char* last2)
+{
+#if CHAR_MAX == SCHAR_MAX
+	return lexicographical_compare(	(const signed char*)first1,
+									(const signed char*)last1,
+									(const signed char*)first2,
+									(const signed char*)last2	);
+#else
+	return lexicographical_compare(	(const unsigned char*)first1,
+									(const unsigned char*)last1,
+									(const unsigned char*)first2,
+									(const unsigned char*)last2	);
+#endif
+}
+
+// lexicographical_compare_3way
+template <class InputIterator1, class InputIterator2>
+int lexicographical_compare_3way(InputIterator1 first1, InputIterator1 last1,
+	InputIterator2 first2, InputIterator2 last2)
+{
+	while (first1 != last1 && first2 != last2) {
+		if (*first1 < *first2) return -1;
+		if (*first2 < *first1) return 1;
+		++first1; ++first2;
+	}
+	if (first2 == last2) {
+		return !(first1 == last1);
+	}
+	else {
+		return -1;
+	}
+}
+
+inline int
+lexicographical_compare_3way(const unsigned char* first1,
+	const unsigned char* last1,
+	const unsigned char* first2,
+	const unsigned char* last2)
+{
+	const ptrdiff_t len1 = last1 - first1;
+	const ptrdiff_t len2 = last2 - first2;
+	const int result = memcmp(first1, first2, min(len1, len2));
+	return result != 0 ? result : (len1 == len2 ? 0 : (len1 < len2 ? -1 : 1));
+}
+
+inline int lexicographical_compare_3way(const char* first1, const char* last1,
+	const char* first2, const char* last2)
+{
+#if CHAR_MAX == SCHAR_MAX
+	return lexicographical_compare_3way(
+		(const signed char*)first1,
+		(const signed char*)last1,
+		(const signed char*)first2,
+		(const signed char*)last2);
+#else
+	return lexicographical_compare_3way((const unsigned char*)first1,
+		(const unsigned char*)last1,
+		(const unsigned char*)first2,
+		(const unsigned char*)last2);
+#endif
+}
+
+// lower_bound
+template <class ForwardIterator, class T, class Distance>
+ForwardIterator __lower_bound(ForwardIterator first, ForwardIterator last,
+	const T& value, Distance*,
+	forward_iterator_tag) {
+	Distance len = 0;
+	distance(first, last, len);
+	Distance half;
+	ForwardIterator middle;
+
+	while (len > 0) {
+		half = len >> 1;
+		middle = first;
+		advance(middle, half);
+		if (*middle < value) {
+			first = middle;
+			++first;
+			len = len - half - 1;
+		}
+		else
+			len = half;
+	}
+	return first;
+}
+
+template <class RandomAccessIterator, class T, class Distance>
+RandomAccessIterator __lower_bound(RandomAccessIterator first,
+	RandomAccessIterator last, const T& value,
+	Distance*, random_access_iterator_tag) {
+	Distance len = last - first;
+	Distance half;
+	RandomAccessIterator middle;
+
+	while (len > 0) {
+		half = len >> 1;
+		middle = first + half;
+		if (*middle < value) {
+			first = middle + 1;
+			len = len - half - 1;
+		}
+		else
+			len = half;
+	}
+	return first;
+}
+
+template <class ForwardIterator, class T>
+inline ForwardIterator lower_bound(ForwardIterator first, ForwardIterator last,
+	const T& value) {
+	return __lower_bound(first, last, value, distance_type(first),
+		iterator_category(first));
+}
+
+template <class ForwardIterator, class T, class Compare, class Distance>
+ForwardIterator __lower_bound(ForwardIterator first, ForwardIterator last,
+	const T& value, Compare comp, Distance*,
+	forward_iterator_tag) {
+	Distance len = 0;
+	distance(first, last, len);
+	Distance half;
+	ForwardIterator middle;
+
+	while (len > 0) {
+		half = len >> 1;
+		middle = first;
+		advance(middle, half);
+		if (comp(*middle, value)) {
+			first = middle;
+			++first;
+			len = len - half - 1;
+		}
+		else
+			len = half;
+	}
+	return first;
+}
+
+template <class RandomAccessIterator, class T, class Compare, class Distance>
+RandomAccessIterator __lower_bound(RandomAccessIterator first,
+	RandomAccessIterator last,
+	const T& value, Compare comp, Distance*,
+	random_access_iterator_tag) {
+	Distance len = last - first;
+	Distance half;
+	RandomAccessIterator middle;
+
+	while (len > 0) {
+		half = len >> 1;
+		middle = first + half;
+		if (comp(*middle, value)) {
+			first = middle + 1;
+			len = len - half - 1;
+		}
+		else
+			len = half;
+	}
+	return first;
+}
+
+template <class ForwardIterator, class T, class Compare>
+inline ForwardIterator lower_bound(ForwardIterator first, ForwardIterator last,
+	const T& value, Compare comp) {
+	return __lower_bound(first, last, value, comp, distance_type(first),
+		iterator_category(first));
+}
+
+// median
+template<class T>
+inline const T& __median(const T& a, const T& b, const T& c) {
+	if (a < b)
+		if (b < c)
+			return b;
+		else if (a < c)
+			return c;
+		else
+			return a;
+	else if (a < c)
+		return a;
+	else if (b < c)
+		return c;
+	else
+		return b;
+}
+
+template<class T, class Compare>
+inline const T& __median(const T& a, const T& b, const T& c, Compare comp) {
+	if (comp(a, c))
+		if (comp(b, c))
+			return b;
+		else if (comp(a, c))
+			return c;
+		else
+			return a;
+	else if (comp(a, c))
+		return a;
+	else if (comp(b, c))
+		return c;
+	else
+		return b;
+}
+
+template<class InputIterator, class Function>
+Function for_each(InpputIterator first, InputIterator last, Function f) {
+	for (; first != last; ++first)
+		f(*first);
+	return f;
+}
+
+// find
+template<class InputIterator, class T>
+InputIterator find(InputIterator first, InputIterator last, const T& value) {
+	while (first != last && *first != value)++first;
+	return first;
+}
+
+template<class II, class Predicate>
+II find_if(II first, II last, Predicate pred) {
+	while (first != last && !pred(*first))++first;
+	return first;
+}
+
+// adjacent_find
+template<class FI>
+FI adjacent_find(FI first, FI last) {
+	if (first == last)return last;
+	FI next = first;
+	while (++next != last) {
+		if (*first == *next)return first;
+		first = next;
+	}
+	return last;
+}
+
+template<class FI, class BinaryPredicate>
+FI adjacent_find(FI first, FI last, BinaryPredicate binary_pred) {
+	if (first == last)return last;
+	FI next = first;
+	while (++next != last) {
+		if (binary_pred(*first, *next))return first;
+		first = next;
+	}
+	return last;
+}
+
+// count
+template<class II, class T, class Size>
+void count(II first, II last, const T& value, Size& n) {
+	for (; first != last; ++first)
+		if (*first == value)
+			++n;
+}
+
+template<class II, class Predicate, class Size>
+void count_if(II first, II last, Predicate pred, Size& n) {
+	for (; first != last; ++first)
+		if (pred(*first))
+			++n;
+}
+
+template <class InputIterator, class T>
+typename iterator_traits<InputIterator>::difference_type
+count(InputIterator first, InputIterator last, const T& value) {
+	typename iterator_traits<InputIterator>::difference_type n = 0;
+	for (; first != last; ++first)
+		if (*first == value)
+			++n;
+	return n;
+}
+
+template <class InputIterator, class Predicate>
+typename iterator_traits<InputIterator>::difference_type
+count_if(InputIterator first, InputIterator last, Predicate pred) {
+	typename iterator_traits<InputIterator>::difference_type n = 0;
+	for (; first != last; ++first)
+		if (pred(*first))
+			++n;
+	return n;
+}
+
+// search
+
+
+
 
 
 

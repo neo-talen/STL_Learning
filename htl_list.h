@@ -115,7 +115,7 @@ protected:
 	link_type get_node() { return list_node_allocator::allocate(); }
 	void put_node(link_type p) { list_node_allocator::deallocate(p); }
 
-	link_type creat_node(const T& x) {
+	link_type create_node(const T& x) {
 		link_type p = get_node();
 		try{
 			construct(&p->data, x);
@@ -216,7 +216,7 @@ public:
 
 public:
 	iterator insert(iterator position, const T& x) {
-		link_type tmp = creat_node(x);
+		link_type tmp = create_node(x);
 		tmp->next = position.node;
 		tmp->prev = position.node->prev;
 		(link_type(position.node->prev))->next = tmp;

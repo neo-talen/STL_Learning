@@ -6,6 +6,8 @@
 #include"htl_micros.h"
 #include"htl_allocator.h"
 #include"htl_unintialized.h"
+#include<algorithm>
+using std::max;
 HTL_NS_BEGIN
 
 template<class T, class Alloc = alloc>
